@@ -9,6 +9,10 @@ from urllib import request
 from config.Config import Config
 from pathlib import Path
 
+headless = True
+
+
+
 WIN_SDK = "https://developer.microsoft.com/it-it/windows/downloads/windows-10-sdk/"
 VS_BT = f"https://visualstudio.microsoft.com/downloads/?utm_medium=microsoft&utm_source=docs.microsoft.com" \
         f"&utm_campaign=navigation+cta&utm_content=download+vs2019"
@@ -55,7 +59,10 @@ def choose_logo():
         for i in range(0, 4):
             print(f"  {i}: {choices[i]}")
         try:
-            choice = int(input("  > "))
+            if headless:
+                choice = 3
+            else:
+                choice = int(input("  > "))
         except:
             pass
     c.set("MISC", "logo", choice)
@@ -81,7 +88,10 @@ def detect_base_path():
     choice = -1
     while not (0 <= choice < len(available)):
         try:
-            choice = int(input("> "))
+            if headless:
+                choice = 0
+            else:
+                choice = int(input("> "))
         except ValueError:
             continue
         except KeyboardInterrupt:
@@ -262,16 +272,17 @@ def update_llvm_compiler(max_recurse=1):
         print("[-] LLVM was not found on the system, do you want to download the static binaries?")
         choice = "Q"
         download = False
-        while choice.lower() not in ["y", "n"]:
-            try:
-                choice = input("[Y|N] > ")
-                if choice.lower() == "n":
-                    download = False
-                elif choice.lower() == "y":
-                    download = True
-            except:
-                continue
-        if download:
+        if not headless:
+            while choice.lower() not in ["y", "n"]:
+                try:
+                    choice = input("[Y|N] > ")
+                    if choice.lower() == "n":
+                        download = False
+                    elif choice.lower() == "y":
+                        download = True
+                except:
+                    continue
+        if download or headless:
             max_recurse -= 1
             print("[+] Downloading LLVM, the process may take minutes (~500MB)")
             path = download_llvm()
@@ -329,7 +340,10 @@ def update_section(config: Config, section: str, versions: dict):
             choice = -1
             while not (0 <= choice < len(v)):
                 try:
-                    choice = int(input("> "))
+                    if headless:
+                        choice = 0
+                    else:
+                        choice = int(input("> "))
                     config.set(section, k, v[choice])
                 except ValueError:
                     continue
@@ -368,4 +382,5 @@ def update_dumper(base_path):
 
 
 if __name__ == "__main__":
+
     update_config()
